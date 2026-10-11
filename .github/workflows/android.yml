@@ -4,11 +4,6 @@ on:
   push:
     branches: ['**']
   workflow_dispatch:
-    inputs:
-      upload_to_play:
-        description: 'Subir el AAB a la pista de prueba interna de Google Play'
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -48,7 +43,9 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-      - uses: android-actions/setup-android@v3
+      # Los runners ubuntu-latest ya traen el Android SDK ($ANDROID_HOME); solo aceptamos sus licencias.
+      - name: Licencias del Android SDK
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
 
       - run: npm ci
       - name: Versión
@@ -84,12 +81,3 @@ jobs:
           name: joya-bloques-release-aab
           path: android/app/build/outputs/bundle/release/*.aab
 
-      - name: Subir a Google Play (prueba interna)
-        if: ${{ inputs.upload_to_play && env.ANDROID_KEYSTORE_PATH != '' }}
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.joyabloques.juego
-          releaseFiles: android/app/build/outputs/bundle/release/*.aab
-          track: internal
-          status: draft
