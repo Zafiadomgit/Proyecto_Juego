@@ -6,6 +6,8 @@ export interface SaveData {
   ownedThemes: string[];
   theme: string;
   ownedProducts: string[];
+  /** Tokens de compra ya entregados (evita entregar dos veces la misma compra de Play). */
+  processedPurchases: string[];
   bestScore: number;
   adventureLevel: number;
   levelStars: Record<number, number>;
@@ -28,6 +30,7 @@ export function defaultSave(): SaveData {
     ownedThemes: ['classic'],
     theme: 'classic',
     ownedProducts: [],
+    processedPurchases: [],
     bestScore: 0,
     adventureLevel: 1,
     levelStars: {},

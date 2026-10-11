@@ -1,5 +1,9 @@
 node_modules/
 dist/
-android/
 *.log
 .DS_Store
+.env.production
+.env.local
+*.jks
+*.keystore
+keystore.properties

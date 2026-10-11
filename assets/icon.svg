@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a3fa8"/><stop offset="1" stop-color="#0d1440"/></linearGradient>
+    <linearGradient id="gem" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8fdff"/><stop offset=".5" stop-color="#5be7ff"/><stop offset="1" stop-color="#2a7bff"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="18"/></filter>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <g transform="translate(232 232)">
+    <g>
+      <rect x="0" y="0" width="270" height="270" rx="50" fill="#ff5d5d"/><rect x="30" y="22" width="210" height="70" rx="30" fill="#fff" opacity=".3"/>
+      <rect x="290" y="0" width="270" height="270" rx="50" fill="#ffd93b"/><rect x="320" y="22" width="210" height="70" rx="30" fill="#fff" opacity=".3"/>
+      <rect x="0" y="290" width="270" height="270" rx="50" fill="#3bc8ff"/><rect x="30" y="312" width="210" height="70" rx="30" fill="#fff" opacity=".3"/>
+      <rect x="290" y="290" width="270" height="270" rx="50" fill="#5ee05e"/><rect x="320" y="312" width="210" height="70" rx="30" fill="#fff" opacity=".3"/>
+    </g>
+    <path d="M280 120 L420 240 L280 440 L140 240 Z" fill="#7ff3ff" filter="url(#glow)" opacity=".8"/>
+    <path d="M280 120 L420 240 L280 440 L140 240 Z" fill="url(#gem)" stroke="#fff" stroke-width="14" stroke-linejoin="round"/>
+    <path d="M140 240 L420 240 M280 120 L230 240 L280 440 L330 240 Z" fill="none" stroke="#fff" stroke-width="6" opacity=".6"/>
+  </g>
+</svg>

@@ -6,29 +6,42 @@ export interface StoreProduct {
   price: string;
 }
 
-export type PurchaseOutcome = { status: 'purchased'; productId: string } | { status: 'cancelled' } | { status: 'error'; message: string };
+export type PurchaseOutcome =
+  | { status: 'purchased' }
+  | { status: 'pending' }
+  | { status: 'cancelled' }
+  | { status: 'error'; message: string };
 
 /**
- * Abstracción de Google Play Billing.
- * En Android se implementa con Play Billing Library (vía plugin de Capacitor) y se debe:
- *   1. Verificar el token de compra en servidor (Google Play Developer API).
- *   2. Reconocer (acknowledge) la compra en menos de 3 días o Google la reembolsa.
- *   3. Consumir los productos consumibles tras otorgarlos.
+ * Se llama cuando una compra está pagada y verificada y hay que entregar su contenido.
+ * `purchaseToken` identifica la compra de forma única: sirve para no entregarla dos veces.
+ * Debe guardar el progreso de forma síncrona; justo después la compra se reconoce/consume en Play.
+ */
+export type GrantHandler = (productId: string, purchaseToken: string) => void;
+
+/**
+ * Abstracción de Google Play Billing. Las compras pueden llegar en cualquier momento (pagos pendientes
+ * que se completan más tarde, compras no terminadas en una sesión anterior), por eso la entrega se hace
+ * a través de `onGrant` y no del resultado de `purchase()`.
  */
 export interface BillingService {
-  readonly available: boolean;
+  init(onGrant: GrantHandler): Promise<void>;
   getProducts(): Promise<StoreProduct[]>;
   purchase(productId: string): Promise<PurchaseOutcome>;
-  /** Devuelve los no consumibles ya comprados (restaurar en reinstalación / otro dispositivo). */
-  restore(): Promise<string[]>;
+  /** Vuelve a consultar a Play las compras del usuario; las que falten se entregan vía `onGrant`. */
+  restore(): Promise<void>;
 }
 
-/** Implementación simulada para desarrollo en navegador. NUNCA se usa en la build de producción. */
+/** Implementación simulada para desarrollo en navegador. Solo se usa fuera de Android. */
 export class MockBilling implements BillingService {
-  readonly available = true;
-  private owned = new Set<string>();
+  private owned = new Map<string, string>();
+  private onGrant: GrantHandler = () => undefined;
 
   constructor(private confirm: (msg: string) => Promise<boolean>) {}
+
+  async init(onGrant: GrantHandler): Promise<void> {
+    this.onGrant = onGrant;
+  }
 
   async getProducts(): Promise<StoreProduct[]> {
     return PRODUCTS.map((p) => ({ id: p.id, price: `US$${p.referencePriceUsd.toFixed(2)}` }));
@@ -39,11 +52,13 @@ export class MockBilling implements BillingService {
     if (!p) return { status: 'error', message: 'Producto desconocido' };
     const ok = await this.confirm(`[Simulación] ¿Comprar "${p.title}" por US$${p.referencePriceUsd}?`);
     if (!ok) return { status: 'cancelled' };
-    if (p.type === 'non_consumable') this.owned.add(productId);
-    return { status: 'purchased', productId };
+    const token = `mock-${productId}-${Date.now()}`;
+    if (p.type === 'non_consumable') this.owned.set(productId, token);
+    this.onGrant(productId, token);
+    return { status: 'purchased' };
   }
 
-  async restore(): Promise<string[]> {
-    return [...this.owned];
+  async restore(): Promise<void> {
+    for (const [id, token] of this.owned) this.onGrant(id, token);
   }
 }

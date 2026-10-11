@@ -4,12 +4,15 @@ import { starsForLevel } from './core/levels';
 import { seedFromDate } from './core/rng';
 import { coinsForScore } from './core/scoring';
 import { GEM_COSTS, PRODUCTS, productById } from './meta/catalog';
-import { DAILY_REWARDS, applyPurchase, buyTheme, canClaimDaily, claimDaily, spendGems } from './meta/economy';
+import { DAILY_REWARDS, buyTheme, canClaimDaily, claimDaily, grantPurchase, spendGems } from './meta/economy';
 import { dayKey, loadSave, writeSave, type SaveData } from './meta/save';
 import { THEMES, themeById } from './meta/themes';
 import { shouldShowInterstitial, type RewardedPlacement } from './platform/ads';
+import { PRIVACY_POLICY_URL } from './platform/config';
 import { createPlatform } from './platform/index';
-import { Sfx, haptic } from './ui/audio';
+import { initNative } from './native';
+import { Sfx } from './ui/audio';
+import { haptic } from './native';
 import { GameView } from './ui/gameView';
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
@@ -348,6 +351,7 @@ async function showShop(): Promise<void> {
   const price = (id: string) => products.find((p) => p.id === id)?.price ?? '';
   const items = PRODUCTS.filter((p) => !(p.type === 'non_consumable' && save.ownedProducts.includes(p.id)))
     .filter((p) => !(p.id === 'remove_ads' && save.removeAds))
+    .filter((p) => price(p.id) !== '')
     .map(
       (p) => `<div class="item"><div class="info"><b>${p.title}${p.highlight ? `<span class="tag">${p.highlight}</span>` : ''}</b>
         <span>${p.description}</span></div><button class="btn primary" data-action="buy:${p.id}">${price(p.id)}</button></div>`,
@@ -371,18 +375,18 @@ async function showShop(): Promise<void> {
       }
     },
     restore: async () => {
-      const owned = await platform.billing.restore();
-      const restored = owned.filter((id) => applyPurchase(save, id)).length;
-      persist();
-      refresh();
+      const before = save.ownedProducts.length;
+      await platform.billing.restore();
+      const restored = save.ownedProducts.length - before;
       toast(restored > 0 ? `${restored} compra(s) restaurada(s)` : 'No hay compras que restaurar');
+      if (restored > 0) (close(), void showShop());
     },
   };
   for (const p of PRODUCTS) actions[`buy:${p.id}`] = () => purchase(p.id, close);
   const close = openDialog(
     `<h2>🛒 Tienda</h2>
      ${platform.simulated ? '<p class="legal">Modo desarrollo: las compras son simuladas.</p>' : ''}
-     <div class="section-title">Ofertas</div><div class="list">${items || '<p>¡Ya lo tienes todo!</p>'}</div>
+     <div class="section-title">Ofertas</div><div class="list">${items || `<p>${products.length === 0 ? 'La tienda no está disponible ahora mismo. Comprueba tu conexión.' : '¡Ya lo tienes todo!'}</p>`}</div>
      <div class="section-title">Potenciadores</div>
      <div class="list"><div class="item"><div class="info"><b>🔨 Martillo</b><span>Rompe un bloque. Tienes ${save.hammers}.</span></div>
        <button class="btn ad" data-action="hammerAd">▶ Gratis</button><button class="btn gem" data-action="hammerGems">💎 ${GEM_COSTS.hammer}</button></div></div>
@@ -398,15 +402,20 @@ async function showShop(): Promise<void> {
 async function purchase(productId: string, closeShop: () => void): Promise<void> {
   const res = await platform.billing.purchase(productId);
   if (res.status === 'purchased') {
-    // En producción: aquí llegará la compra ya verificada en servidor y reconocida (acknowledge).
-    applyPurchase(save, res.productId);
-    persist();
-    sfx.coin();
-    toast(`¡Gracias! ${productById(res.productId)?.title ?? ''} activado`);
     closeShop();
-    refresh();
     void showShop();
-  } else if (res.status === 'error') toast(res.message);
+  } else if (res.status === 'pending') toast('Pago pendiente: recibirás tu compra cuando se confirme');
+  else if (res.status === 'error') toast(res.message);
+}
+
+/** Única vía de entrega de compras: la llama la plataforma cuando una compra está pagada y verificada. */
+function onPurchaseGranted(productId: string, purchaseToken: string): void {
+  const isNew = grantPurchase(save, productId, purchaseToken);
+  persist();
+  if (!isNew) return;
+  sfx.coin();
+  toast(`¡Gracias! ${productById(productId)?.title ?? ''} activado`);
+  refresh();
 }
 
 function showThemes(): void {
@@ -491,10 +500,12 @@ function showSettings(): void {
      <label class="toggle">Vibración <input type="checkbox" id="opt-haptics" ${save.settings.haptics ? 'checked' : ''}></label>
      <div class="stack">
        <button class="btn" data-action="privacy">Política de privacidad</button>
+       ${platform.ads.privacyOptionsAvailable ? '<button class="btn" data-action="adPrivacy">Opciones de privacidad de anuncios</button>' : ''}
        <button class="btn ghost" data-action="close">Cerrar</button>
-     </div><p class="legal">Joya Bloques v0.1.0</p>`,
+     </div><p class="legal">Joya Bloques v${__APP_VERSION__}</p>`,
     {
-      privacy: () => toast('Enlace a la política de privacidad (pendiente de publicar)'),
+      privacy: () => (PRIVACY_POLICY_URL ? window.open(PRIVACY_POLICY_URL, '_blank') : toast('Política de privacidad pendiente de publicar')),
+      adPrivacy: () => void platform.ads.showPrivacyOptions(),
       close: () => {
         save.settings.sound = (document.getElementById('opt-sound') as HTMLInputElement).checked;
         save.settings.haptics = (document.getElementById('opt-haptics') as HTMLInputElement).checked;
@@ -538,6 +549,25 @@ document.addEventListener('click', (e) => {
 
 refresh();
 if (canClaimDaily(save, new Date()) && save.stats.gamesPlayed > 0) showDailyReward();
+
+initNative({
+  onBack: () => {
+    const dialogs = document.querySelectorAll('#app > .modal');
+    if (dialogs.length > 0) return true; // los diálogos se cierran con sus botones; no salimos por accidente
+    if (game && !game.over) {
+      showPause();
+      return true;
+    }
+    if (game) {
+      goMenu();
+      return true;
+    }
+    return false;
+  },
+  onPause: () => persist(),
+});
+void platform.billing.init(onPurchaseGranted).catch((e) => console.warn('[billing] init', e));
+void platform.ads.init().catch((e) => console.warn('[ads] init', e));
 
 // Acceso de depuración para pruebas automáticas (solo en desarrollo, no se incluye en la build).
 if (import.meta.env.DEV) (window as unknown as { __game: () => Game | null }).__game = () => game;

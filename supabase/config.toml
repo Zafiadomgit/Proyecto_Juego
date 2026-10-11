@@ -1,0 +1,5 @@
+# Configuración mínima para desplegar la función con la CLI de Supabase:
+#   supabase functions deploy verify-purchase --project-ref TU_PROYECTO
+[functions.verify-purchase]
+# Pública: solo consulta a Google y no expone datos. Compatible con las nuevas claves "publishable".
+verify_jwt = false

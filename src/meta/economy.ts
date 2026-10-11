@@ -64,3 +64,17 @@ export function applyPurchase(save: SaveData, productId: string): boolean {
   for (const t of g.themes ?? []) if (!save.ownedThemes.includes(t)) save.ownedThemes.push(t);
   return true;
 }
+
+const MAX_TRACKED_PURCHASES = 300;
+
+/**
+ * Entrega una compra de Google Play identificada por su token. Devuelve true solo la primera vez:
+ * Play puede reenviar la misma compra (reinicio antes de consumirla, restauración...).
+ */
+export function grantPurchase(save: SaveData, productId: string, purchaseToken: string): boolean {
+  if (save.processedPurchases.includes(purchaseToken)) return false;
+  const applied = applyPurchase(save, productId);
+  save.processedPurchases.push(purchaseToken);
+  if (save.processedPurchases.length > MAX_TRACKED_PURCHASES) save.processedPurchases.splice(0, save.processedPurchases.length - MAX_TRACKED_PURCHASES);
+  return applied;
+}

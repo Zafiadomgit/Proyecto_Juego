@@ -71,6 +71,3 @@ export class Sfx {
   }
 }
 
-export function haptic(enabled: boolean, pattern: number | number[]): void {
-  if (enabled && 'vibrate' in navigator) navigator.vibrate(pattern);
-}

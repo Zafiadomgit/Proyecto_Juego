@@ -1,7 +1,7 @@
 {
   "name": "joya-bloques",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,8 +11,19 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.3",
+    "@types/node": "^22.20.5",
     "typescript": "5.8.3",
     "vite": "6.3.5",
     "vitest": "3.2.4"
+  },
+  "dependencies": {
+    "@capacitor-community/admob": "^8.2.1",
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/haptics": "^8.0.2",
+    "cordova-plugin-purchase": "^13.18.0"
   }
 }

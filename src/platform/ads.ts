@@ -5,8 +5,12 @@ export type RewardedPlacement = 'revive' | 'double_coins' | 'free_hammer';
  * Los anuncios con recompensa son SIEMPRE opcionales y el jugador sabe qué recibe antes de verlos.
  */
 export interface AdsService {
+  init(): Promise<void>;
   showRewarded(placement: RewardedPlacement): Promise<boolean>;
   showInterstitial(): Promise<void>;
+  /** true si la normativa exige un acceso a "Opciones de privacidad" (UMP) dentro de la app. */
+  readonly privacyOptionsAvailable: boolean;
+  showPrivacyOptions(): Promise<void>;
 }
 
 /**
@@ -34,7 +38,13 @@ export function shouldShowInterstitial(
 
 /** Anuncios simulados para desarrollo: muestran una cuenta atrás en pantalla. */
 export class MockAds implements AdsService {
+  readonly privacyOptionsAvailable = false;
+
   constructor(private overlay: (label: string, seconds: number, skippable: boolean) => Promise<boolean>) {}
+
+  async init(): Promise<void> {}
+
+  async showPrivacyOptions(): Promise<void> {}
 
   showRewarded(placement: RewardedPlacement): Promise<boolean> {
     return this.overlay(`Anuncio con recompensa (${placement})`, 3, true);

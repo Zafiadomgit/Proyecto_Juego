@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Joya Bloques</string>
+    <string name="title_activity_main">Joya Bloques</string>
+    <string name="package_name">com.joyabloques.juego</string>
+    <string name="custom_url_scheme">com.joyabloques.juego</string>
+</resources>

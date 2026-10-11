@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyPurchase, buyTheme, canClaimDaily, claimDaily } from '../src/meta/economy';
+import { applyPurchase, buyTheme, canClaimDaily, claimDaily, grantPurchase } from '../src/meta/economy';
 import { defaultSave, loadSave, writeSave } from '../src/meta/save';
 import { PRODUCTS } from '../src/meta/catalog';
 import { shouldShowInterstitial } from '../src/platform/ads';
@@ -44,6 +44,14 @@ describe('Economía', () => {
     const s = defaultSave();
     applyPurchase(s, 'gems_100');
     applyPurchase(s, 'gems_100');
+    expect(s.gems).toBe(220);
+  });
+
+  it('una misma compra de Play (mismo token) solo se entrega una vez', () => {
+    const s = defaultSave();
+    expect(grantPurchase(s, 'gems_100', 'tok-1')).toBe(true);
+    expect(grantPurchase(s, 'gems_100', 'tok-1')).toBe(false);
+    expect(grantPurchase(s, 'gems_100', 'tok-2')).toBe(true);
     expect(s.gems).toBe(220);
   });
 

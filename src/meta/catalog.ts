@@ -23,7 +23,7 @@ export const PRODUCTS: readonly ProductDef[] = [
     id: 'remove_ads',
     type: 'non_consumable',
     title: 'Sin anuncios',
-    description: 'Elimina para siempre los anuncios intersticiales y el banner. Los anuncios con recompensa siguen siendo opcionales.',
+    description: 'Elimina para siempre los anuncios entre partidas. Los anuncios con recompensa siguen siendo opcionales.',
     referencePriceUsd: 2.99,
     grants: { removeAds: true },
     highlight: 'Recomendado',
