@@ -1,7 +1,7 @@
 import type { Game, PlaceResult } from '../core/game';
 import { shapeSize, type Piece } from '../core/pieces';
 import type { Theme } from '../meta/themes';
-import { drawBlock, drawGem, roundRect } from './draw';
+import { drawBlock, drawEmpty, drawGem, drawLit, roundRect } from './draw';
 import { Fx } from './fx';
 
 export interface GameViewHooks {
@@ -187,16 +187,20 @@ export class GameView {
     clear.cells.forEach((c, k) => {
       const x = this.boardX + c.c * this.cell;
       const y = this.boardY + c.r * this.cell;
-      const color = theme.blocks[(c.color - 1) % theme.blocks.length];
-      this.fx.ghost(x, y, this.cell, color, k * 0.008);
+      const [color, deep] = blockColors(theme, c.color);
+      this.fx.ghost(x, y, this.cell, color, deep, k * 0.008);
       this.fx.burst(x + this.cell / 2, y + this.cell / 2, c.gem ? '#7ff3ff' : color, c.gem ? 14 : 5, 220 + lines * 40);
     });
     const ys = clear.cells.map((c) => c.r);
-    const midY = this.boardY + ((Math.min(...ys) + Math.max(...ys) + 1) / 2) * this.cell;
-    this.fx.text(cx, midY, `+${result.points}`, this.cell * 0.7, '#ffe066');
-    if (result.label) this.fx.text(cx, midY - this.cell * 0.9, result.label, this.cell * 0.8, '#ffffff');
+    // Textos apilados hacia arriba (puntos, racha, tablero limpio) sin salirse del tablero.
+    const stack = [{ text: `+${result.points}`, size: 0.75, color: '#ffc93c', shadow: '#7a4b00', glow: false }];
+    if (result.label) stack.push({ text: result.label, size: 0.85, color: '#ffffff', shadow: '#4a2bd6', glow: true });
+    if (result.perfect) stack.push({ text: '¡Tablero limpio!', size: 0.8, color: '#ffffff', shadow: '#4a2bd6', glow: true });
+    const step = this.cell * 1.05;
+    let baseY = this.boardY + ((Math.min(...ys) + Math.max(...ys) + 1) / 2) * this.cell;
+    baseY = Math.max(baseY, this.boardY + this.cell * 0.8 + step * (stack.length - 1));
+    stack.forEach((l, i) => this.fx.text(cx, baseY - step * i, l.text, this.cell * l.size, l.color, l.shadow, l.glow));
     if (result.perfect) {
-      this.fx.text(cx, this.boardY + this.cell * 4, '¡TABLERO LIMPIO!', this.cell * 0.75, '#7ff3ff');
       this.fx.flash = 1;
     }
     this.fx.shake = Math.min(14, 3 + lines * 3 + result.combo);
@@ -224,17 +228,23 @@ export class GameView {
     ctx.save();
     if (this.fx.shake > 0) ctx.translate((Math.random() - 0.5) * this.fx.shake, (Math.random() - 0.5) * this.fx.shake);
 
-    // Tablero
+    // Tablero: marco flotante (shadow-panel) y celdas vacías como huecos
     const bp = cell * size;
-    roundRect(ctx, this.boardX - 8, this.boardY - 8, bp + 16, bp + 16, 16);
+    const frame = Math.max(8, cell * 0.22);
+    ctx.save();
+    roundRect(ctx, this.boardX - frame, this.boardY - frame, bp + frame * 2, bp + frame * 2, frame * 2);
+    ctx.shadowColor = 'rgba(0,0,0,0.55)';
+    ctx.shadowBlur = 40;
+    ctx.shadowOffsetY = 18;
     ctx.fillStyle = theme.boardBg;
     ctx.fill();
+    ctx.shadowColor = 'transparent';
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.stroke();
+    ctx.restore();
     for (let r = 0; r < size; r++)
-      for (let c = 0; c < size; c++) {
-        roundRect(ctx, this.boardX + c * cell + 2, this.boardY + r * cell + 2, cell - 4, cell - 4, cell * 0.16);
-        ctx.fillStyle = theme.cellEmpty;
-        ctx.fill();
-      }
+      for (let c = 0; c < size; c++) drawEmpty(ctx, this.boardX + c * cell, this.boardY + r * cell, cell, theme.cellEmpty);
 
     // Vista previa: líneas que se despejarían
     const d = this.drag;
@@ -246,7 +256,7 @@ export class GameView {
       pv.rows.forEach((r) => clearRows.add(r));
       pv.cols.forEach((c) => clearCols.add(c));
     }
-    const dragColor = dragPiece ? theme.blocks[(dragPiece.color - 1) % theme.blocks.length] : '';
+    const [dragColor, dragDeep] = dragPiece ? blockColors(theme, dragPiece.color) : ['', ''];
 
     for (let r = 0; r < size; r++)
       for (let c = 0; c < size; c++) {
@@ -260,26 +270,30 @@ export class GameView {
           s = cell * (0.8 + 0.2 * easeOutBack(k));
           if (k >= 1) this.placedAt.delete(idx);
         }
-        const highlighted = clearRows.has(r) || clearCols.has(c);
-        const color = highlighted ? dragColor : theme.blocks[(v - 1) % theme.blocks.length];
         const off = (cell - s) / 2;
-        drawBlock(ctx, this.boardX + c * cell + off, this.boardY + r * cell + off, s, color);
+        if (clearRows.has(r) || clearCols.has(c)) drawLit(ctx, this.boardX + c * cell, this.boardY + r * cell, cell, t);
+        else {
+          const [color, deep] = blockColors(theme, v);
+          drawBlock(ctx, this.boardX + c * cell + off, this.boardY + r * cell + off, s, color, deep);
+        }
         if (g.board.isGem(r, c)) drawGem(ctx, this.boardX + c * cell, this.boardY + r * cell, cell, t);
       }
 
     // Fantasma de la pieza en el destino
     if (d && d.target && dragPiece) {
-      for (const [dr, dc] of dragPiece.shape.cells)
-        drawBlock(ctx, this.boardX + (d.target.col + dc) * cell, this.boardY + (d.target.row + dr) * cell, cell, dragColor, 0.45);
-      for (const r of clearRows) this.glowLine(this.boardX, this.boardY + r * cell, bp, cell, t);
-      for (const c of clearCols) this.glowLine(this.boardX + c * cell, this.boardY, cell, bp, t);
+      for (const [dr, dc] of dragPiece.shape.cells) {
+        const r = d.target.row + dr;
+        const c = d.target.col + dc;
+        if (clearRows.has(r) || clearCols.has(c)) drawLit(ctx, this.boardX + c * cell, this.boardY + r * cell, cell, t);
+        else drawBlock(ctx, this.boardX + c * cell, this.boardY + r * cell, cell, dragColor, dragDeep, 0.45);
+      }
     }
 
     // Modo martillo
     if (this.hooks.hammerActive()) {
-      ctx.strokeStyle = `rgba(255,224,102,${0.6 + Math.sin(t * 0.008) * 0.3})`;
+      ctx.strokeStyle = `rgba(255,201,60,${0.6 + Math.sin(t * 0.008) * 0.3})`;
       ctx.lineWidth = 4;
-      roundRect(ctx, this.boardX - 8, this.boardY - 8, bp + 16, bp + 16, 16);
+      roundRect(ctx, this.boardX - frame, this.boardY - frame, bp + frame * 2, bp + frame * 2, frame * 2);
       ctx.stroke();
     }
 
@@ -297,11 +311,11 @@ export class GameView {
       const center = this.slotCenter(i);
       const ox = center.x - (cols * tc) / 2;
       const oy = center.y - (rows * tc) / 2;
-      const color = theme.blocks[(piece.color - 1) % theme.blocks.length];
-      for (const [dr, dc] of piece.shape.cells) drawBlock(ctx, ox + dc * tc, oy + dr * tc, tc, color, fits ? 1 : 0.3);
+      const [color, deep] = blockColors(theme, piece.color);
+      for (const [dr, dc] of piece.shape.cells) drawBlock(ctx, ox + dc * tc, oy + dr * tc, tc, color, deep, fits ? 1 : 0.3);
     });
 
-    this.fx.draw(ctx, (x, y, s, c, a) => drawBlock(ctx, x, y, s, c, a));
+    this.fx.draw(ctx, (x, y, s, c, deep, a) => drawBlock(ctx, x, y, s, c, deep, a));
 
     // Pieza arrastrada (encima de todo)
     if (d && dragPiece) {
@@ -310,26 +324,26 @@ export class GameView {
       ctx.shadowColor = 'rgba(0,0,0,0.4)';
       ctx.shadowBlur = 16;
       ctx.shadowOffsetY = 8;
-      for (const [dr, dc] of dragPiece.shape.cells) drawBlock(ctx, o.x + dc * cell, o.y + dr * cell, cell, dragColor);
+      for (const [dr, dc] of dragPiece.shape.cells) drawBlock(ctx, o.x + dc * cell, o.y + dr * cell, cell, dragColor, dragDeep);
       ctx.restore();
     }
     ctx.restore();
 
     if (this.fx.flash > 0) {
-      ctx.fillStyle = `rgba(255,255,255,${this.fx.flash * 0.35})`;
-      ctx.fillRect(0, 0, this.w, this.h);
+      // destello solo sobre el tablero (tablero limpio)
+      const bp = this.cell * size;
+      const frame = Math.max(8, this.cell * 0.22);
+      roundRect(ctx, this.boardX - frame, this.boardY - frame, bp + frame * 2, bp + frame * 2, frame * 2);
+      ctx.fillStyle = `rgba(127,243,255,${this.fx.flash * 0.3})`;
+      ctx.fill();
     }
   }
+}
 
-  private glowLine(x: number, y: number, w: number, h: number, t: number): void {
-    const ctx = this.ctx;
-    ctx.save();
-    ctx.globalAlpha = 0.25 + Math.sin(t * 0.012) * 0.12;
-    ctx.fillStyle = '#ffffff';
-    roundRect(ctx, x, y, w, h, 8);
-    ctx.fill();
-    ctx.restore();
-  }
+/** Par [color superior, color inferior] del bloque `v` (1..N) en el tema. */
+function blockColors(theme: Theme, v: number): [string, string | undefined] {
+  const i = (v - 1) % theme.blocks.length;
+  return [theme.blocks[i], theme.blocksDeep?.[i]];
 }
 
 function easeOutBack(k: number): number {

@@ -1,3 +1,7 @@
+import '@fontsource/lilita-one/400.css';
+import '@fontsource/nunito/700.css';
+import '@fontsource/nunito/800.css';
+import '@fontsource/nunito/900.css';
 import './style.css';
 import { Game, type GameMode, type PlaceResult } from './core/game';
 import { starsForLevel } from './core/levels';
@@ -14,6 +18,7 @@ import { initNative } from './native';
 import { Sfx } from './ui/audio';
 import { haptic } from './native';
 import { GameView } from './ui/gameView';
+import { hydrateIcons, icon } from './ui/icons';
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
 const storage = (() => {
@@ -91,9 +96,10 @@ function adOverlay(label: string, seconds: number, skippable: boolean): Promise<
   });
 }
 
-function toast(msg: string): void {
+function toast(msg: string, html = false): void {
   const t = $('#toast');
-  t.textContent = msg;
+  if (html) t.innerHTML = msg;
+  else t.textContent = msg;
   t.classList.remove('hidden');
   clearTimeout((toast as unknown as { h?: number }).h);
   (toast as unknown as { h?: number }).h = window.setTimeout(() => t.classList.add('hidden'), 2000);
@@ -106,6 +112,10 @@ function setBind(name: string, value: string): void {
   document.querySelectorAll(`[data-bind="${name}"]`).forEach((el) => (el.textContent = value));
 }
 
+function setHtml(name: string, html: string): void {
+  document.querySelectorAll(`[data-bind="${name}"]`).forEach((el) => (el.innerHTML = html));
+}
+
 function refresh(): void {
   setBind('coins', String(save.coins));
   setBind('gems', String(save.gems));
@@ -115,20 +125,15 @@ function refresh(): void {
   const today = dayKey(new Date());
   setBind('dailyBest', save.dailyChallenge.day === today && save.dailyChallenge.best > 0 ? `· ${save.dailyChallenge.best}` : '· ¡nuevo!');
   document.querySelector('[data-bind="giftDot"]')?.classList.toggle('hidden', !canClaimDaily(save, new Date()));
-  applyThemeColors();
   if (game) {
     setBind('score', String(game.score));
-    if (game.mode.kind === 'adventure') setBind('goal', `💎 ${game.gemsCollected}/${game.gemTarget} · Nivel ${game.mode.level}`);
+    if (game.mode.kind === 'adventure') setHtml('goal', `${icon('gem')} ${game.gemsCollected}/${game.gemTarget} · Nivel ${game.mode.level}`);
     else if (game.mode.kind === 'daily') setBind('goal', `Reto diario · Mejor: ${save.dailyChallenge.day === today ? save.dailyChallenge.best : 0}`);
     else setBind('goal', `Récord: ${Math.max(save.bestScore, game.score)}`);
   }
   $('[data-action="hammer"]').classList.toggle('active', hammerMode);
 }
 
-function applyThemeColors(): void {
-  const t = themeById(save.theme);
-  document.body.style.background = `linear-gradient(180deg, ${t.background[0]}, ${t.background[1]})`;
-}
 
 function showScreen(id: 'menu' | 'game'): void {
   document.querySelectorAll('.screen').forEach((s) => s.classList.toggle('active', s.id === id));
@@ -188,8 +193,8 @@ function showRevive(): void {
     `<h2>¡Sin espacio!</h2><p>Puntuación actual</p><div class="big-number">${g.score}</div>
      <p>Libera 3 filas y sigue jugando</p>
      <div class="stack">
-       <button class="btn ad big" data-action="ad">▶ Continuar gratis (anuncio)</button>
-       <button class="btn gem" data-action="gems" ${save.gems < GEM_COSTS.revive ? 'disabled' : ''}>Continuar · 💎 ${GEM_COSTS.revive}</button>
+       <button class="btn ad big" data-action="ad">${icon('play')}Continuar gratis (anuncio)</button>
+       <button class="btn gem" data-action="gems" ${save.gems < GEM_COSTS.revive ? 'disabled' : ''}>${icon('gem')}Continuar · ${GEM_COSTS.revive}</button>
        <button class="btn ghost" data-action="no">No, gracias</button>
      </div>`,
     {
@@ -238,13 +243,13 @@ function showResults(): void {
   refresh();
 
   const close = openDialog(
-    `<h2>${newRecord ? '🏆 ¡Nuevo récord!' : 'Fin de la partida'}</h2>
+    `<h2>${newRecord ? `${icon('trophy')}¡Nuevo récord!` : 'Fin de la partida'}</h2>
      <div class="big-number">${g.score}</div>
      <p>Líneas: ${g.linesCleared} · Mejor: ${save.bestScore}</p>
-     <div class="reward">+🪙 <b id="coins-earned">${lastCoinsEarned}</b></div>
+     <div class="reward">+${icon('coin')}<b id="coins-earned">${lastCoinsEarned}</b></div>
      <div class="stack">
-       <button class="btn ad" data-action="double">▶ Duplicar monedas (anuncio)</button>
-       <button class="btn primary big" data-action="again">↻ Otra vez</button>
+       <button class="btn ad" data-action="double">${icon('play')}Duplicar monedas (anuncio)</button>
+       <button class="btn primary big" data-action="again">${icon('restart')}Otra vez</button>
        <button class="btn ghost" data-action="menu">Menú</button>
      </div>`,
     {
@@ -280,11 +285,11 @@ function showLevelComplete(): void {
   refresh();
   const close = openDialog(
     `<h2>¡Nivel ${level} superado!</h2>
-     <div class="stars">${'⭐'.repeat(stars)}${'☆'.repeat(3 - stars)}</div>
+     <div class="stars" role="img" aria-label="${stars} de 3 estrellas">${icon('star').repeat(stars)}${`<span class="off">${icon('star')}</span>`.repeat(3 - stars)}</div>
      <p>${g.moves} jugadas · ${g.score} puntos</p>
-     <div class="reward">+🪙 ${reward}</div>
+     <div class="reward">+${icon('coin')}${reward}</div>
      <div class="stack">
-       <button class="btn adventure big" data-action="next">Siguiente nivel ▶</button>
+       <button class="btn adventure big" data-action="next">Siguiente nivel${icon('play')}</button>
        <button class="btn ghost" data-action="menu">Menú</button>
      </div>`,
     {
@@ -326,9 +331,9 @@ function showPause(): void {
   if (!g) return;
   const close = openDialog(
     `<h2>Pausa</h2><div class="stack">
-      <button class="btn primary big" data-action="resume">▶ Continuar</button>
-      <button class="btn" data-action="restart">↻ Reiniciar</button>
-      <button class="btn" data-action="sound">${save.settings.sound ? '🔊 Sonido: sí' : '🔇 Sonido: no'}</button>
+      <button class="btn primary big" data-action="resume">${icon('play')}Continuar</button>
+      <button class="btn" data-action="restart">${icon('restart')}Reiniciar</button>
+      <button class="btn" data-action="sound">${save.settings.sound ? `${icon('soundOn')}Sonido: sí` : `${icon('soundOff')}Sonido: no`}</button>
       <button class="btn ghost" data-action="menu">Salir al menú</button></div>`,
     {
       resume: () => close(),
@@ -364,14 +369,14 @@ async function showShop(): Promise<void> {
       save.hammers++;
       persist();
       refresh();
-      toast('+1 🔨');
+      toast('+1 martillo');
     },
     hammerAd: async () => {
       if (await rewarded('free_hammer')) {
         save.hammers++;
         persist();
         refresh();
-        toast('+1 🔨');
+        toast('+1 martillo');
       }
     },
     restore: async () => {
@@ -384,12 +389,12 @@ async function showShop(): Promise<void> {
   };
   for (const p of PRODUCTS) actions[`buy:${p.id}`] = () => purchase(p.id, close);
   const close = openDialog(
-    `<h2>🛒 Tienda</h2>
+    `<h2>${icon('cart')}Tienda</h2>
      ${platform.simulated ? '<p class="legal">Modo desarrollo: las compras son simuladas.</p>' : ''}
      <div class="section-title">Ofertas</div><div class="list">${items || `<p>${products.length === 0 ? 'La tienda no está disponible ahora mismo. Comprueba tu conexión.' : '¡Ya lo tienes todo!'}</p>`}</div>
      <div class="section-title">Potenciadores</div>
-     <div class="list"><div class="item"><div class="info"><b>🔨 Martillo</b><span>Rompe un bloque. Tienes ${save.hammers}.</span></div>
-       <button class="btn ad" data-action="hammerAd">▶ Gratis</button><button class="btn gem" data-action="hammerGems">💎 ${GEM_COSTS.hammer}</button></div></div>
+     <div class="list"><div class="item"><div class="info"><b>${icon('hammer')}Martillo</b><span>Rompe un bloque. Tienes ${save.hammers}.</span></div>
+       <button class="btn ad" data-action="hammerAd">${icon('play')}Gratis</button><button class="btn gem" data-action="hammerGems">${icon('gem')}${GEM_COSTS.hammer}</button></div></div>
      <p class="legal">Los pagos se procesan de forma segura con Google Play. Precios con impuestos incluidos según tu país.
        Ningún producto contiene recompensas aleatorias. Todo el contenido de juego puede conseguirse jugando.</p>
      <div class="stack"><button class="btn ghost" data-action="restore">Restaurar compras</button>
@@ -427,7 +432,7 @@ function showThemes(): void {
     if (selected) btn = '<button class="btn" disabled>En uso</button>';
     else if (owned) btn = `<button class="btn adventure" data-action="use:${t.id}">Usar</button>`;
     else if (t.exclusiveTo) btn = `<button class="btn" data-action="shop">Pack de inicio</button>`;
-    else btn = `<button class="btn ${t.price!.currency === 'gems' ? 'gem' : 'primary'}" data-action="buy:${t.id}">${t.price!.currency === 'gems' ? '💎' : '🪙'} ${t.price!.amount}</button>`;
+    else btn = `<button class="btn ${t.price!.currency === 'gems' ? 'gem' : 'primary'}" data-action="buy:${t.id}">${icon(t.price!.currency === 'gems' ? 'gem' : 'coin')}${t.price!.amount}</button>`;
     return `<div class="item">${swatch}<div class="info"><b>${t.name}</b><span>${owned ? 'Desbloqueado' : 'Cosmético'}</span></div>${btn}</div>`;
   }).join('');
   const actions: Actions = { close: () => close(), shop: () => (close(), void showShop()) };
@@ -453,14 +458,14 @@ function showThemes(): void {
     };
   }
   const close = openDialog(
-    `<h2>🎨 Temas</h2><div class="list">${items}</div><div class="stack"><button class="btn" data-action="close">Cerrar</button></div>`,
+    `<h2>${icon('palette')}Temas</h2><div class="list">${items}</div><div class="stack"><button class="btn" data-action="close">Cerrar</button></div>`,
     actions,
     () => undefined,
   );
 }
 
 function rewardLabel(r: (typeof DAILY_REWARDS)[number]): string {
-  return [r.coins ? `🪙${r.coins}` : '', r.gems ? `💎${r.gems}` : '', r.hammers ? `🔨${r.hammers}` : ''].filter(Boolean).join(' ');
+  return [r.coins ? `<span>${icon('coin')}${r.coins}</span>` : '', r.gems ? `<span>${icon('gem')}${r.gems}</span>` : '', r.hammers ? `<span>${icon('hammer')}${r.hammers}</span>` : ''].filter(Boolean).join(' ');
 }
 
 function showDailyReward(): void {
@@ -472,7 +477,7 @@ function showDailyReward(): void {
     return `<div class="${cls}"><b>Día ${i + 1}</b>${rewardLabel(r)}</div>`;
   }).join('');
   const close = openDialog(
-    `<h2>🎁 Regalo diario</h2><p>Vuelve cada día. ¡Si te saltas un día no pierdes tu progreso!</p>
+    `<h2>${icon('gift')}Regalo diario</h2><p>Vuelve cada día. ¡Si te saltas un día no pierdes tu progreso!</p>
      <div class="calendar">${cells}</div>
      <div class="stack">${can ? '<button class="btn primary big" data-action="claim">Reclamar</button>' : '<p>Vuelve mañana para el siguiente regalo.</p>'}
      <button class="btn ghost" data-action="close">Cerrar</button></div>`,
@@ -482,7 +487,7 @@ function showDailyReward(): void {
         persist();
         if (r) {
           sfx.coin();
-          toast(`+ ${rewardLabel(r)}`);
+          toast(`+ ${rewardLabel(r)}`, true);
         }
         close();
         refresh();
@@ -495,7 +500,7 @@ function showDailyReward(): void {
 
 function showSettings(): void {
   const close = openDialog(
-    `<h2>⚙️ Ajustes</h2>
+    `<h2>${icon('settings')}Ajustes</h2>
      <label class="toggle">Sonido <input type="checkbox" id="opt-sound" ${save.settings.sound ? 'checked' : ''}></label>
      <label class="toggle">Vibración <input type="checkbox" id="opt-haptics" ${save.settings.haptics ? 'checked' : ''}></label>
      <div class="stack">
@@ -547,6 +552,9 @@ document.addEventListener('click', (e) => {
   }
 });
 
+hydrateIcons();
+// El canvas no carga fuentes por sí solo: la pedimos ya para que los textos de racha salgan en Lilita One.
+void document.fonts?.load('32px "Lilita One"').catch(() => undefined);
 refresh();
 if (canClaimDaily(save, new Date()) && save.stats.gamesPlayed > 0) showDailyReward();
 

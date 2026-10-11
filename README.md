@@ -27,6 +27,11 @@ src/ui/         Render en canvas, arrastrar y soltar, efectos, sonido sintetizad
 docs/           Investigación de mercado, GDD, cumplimiento Play Store, hoja de ruta
 ```
 
+## Diseño
+El juego sigue el sistema de diseño **Joya Bloques** (paleta Noche, bloques con bisel, Lilita One + Nunito, iconos SVG).
+Los tokens viven en `src/style.css` (`:root`) y en `src/meta/themes.ts`; mantenlos en sincronía con el artifact Design System.
+Las fuentes van empaquetadas con `@fontsource` para que el juego funcione sin conexión.
+
 ## Documentación
 - [Investigación de mercado](docs/investigacion-mercado.md)
 - [Diseño del juego](docs/diseno-juego.md)

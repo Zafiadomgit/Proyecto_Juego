@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   appName: 'Joya Bloques',
   webDir: 'dist',
   android: {
-    backgroundColor: '#0d1440',
+    backgroundColor: '#140c3f',
   },
 };
 
