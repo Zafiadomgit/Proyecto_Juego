@@ -7,15 +7,19 @@
 - Tienda con catálogo de Play Billing y anuncios **simulados** detrás de interfaces.
 - Tests unitarios de la lógica, la economía y la política de anuncios.
 
-## Fase 2 — Android y monetización real (2–3 semanas)
-1. Empaquetar con **Capacitor**: `npm i @capacitor/core @capacitor/cli @capacitor/android && npx cap init && npx cap add android`.
-2. `PlayBilling` que implemente `BillingService` (plugin, p. ej. `cordova-plugin-purchase` o RevenueCat),
-   con validación en servidor (Cloud Function / Supabase Edge Function + Google Play Developer API).
-3. `AdMobAds` que implemente `AdsService` (`@capacitor-community/admob`), con UMP para el consentimiento.
-4. Analítica (Firebase Analytics): embudo del tutorial, partidas, revivir, compras y retención.
-5. Remote Config para ajustar la dificultad y la frecuencia de anuncios sin publicar actualizaciones.
-6. Tutorial interactivo de 3 pasos en la primera partida.
-7. Icono, capturas y vídeo para la ficha. Política de privacidad publicada.
+## ✅ Phase 2: Android and real monetization (code done)
+- Android project with Capacitor 8 (targetSdk 36), its own icon, back button, native haptics.
+- Google Play Billing 9 (cordova-plugin-purchase): token-based delivery with no duplicates, pending payments, restore.
+- Server-side verification: `supabase/functions/verify-purchase` (Play Developer API).
+- AdMob + UMP consent and privacy options.
+- GitHub Actions workflow that builds the debug APK and signed AAB.
+- **Pending (on your side):** steps in [publicar-android.md](publicar-android.md).
+
+## Phase 2b: before production
+1. Analytics (Firebase Analytics): tutorial funnel, games played, revives, purchases and retention.
+2. Remote Config to tune difficulty and ad frequency without shipping updates.
+3. A 3-step interactive tutorial in the first game.
+4. Feature graphic and screenshots for the listing.
 
 ## Fase 3 — Retención (live ops)
 - **Pase de temporada** (4,99 US$/mes, con una vía gratuita con recompensas reales).
