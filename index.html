@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0d1440" />
+    <title>Joya Bloques</title>
+  </head>
+  <body>
+    <div id="app">
+      <section id="menu" class="screen active">
+        <header class="topbar">
+          <div class="wallet"><span class="pill coin">🪙 <b data-bind="coins">0</b></span><span class="pill gem">💎 <b data-bind="gems">0</b></span></div>
+          <button class="icon-btn" data-action="settings" aria-label="Ajustes">⚙️</button>
+        </header>
+        <div class="logo">
+          <div class="logo-blocks"><i></i><i></i><i></i><i></i></div>
+          <h1>Joya<br />Bloques</h1>
+          <p class="best">Récord: <b data-bind="best">0</b></p>
+        </div>
+        <nav class="menu-buttons">
+          <button class="btn big primary" data-action="play-classic">▶ Jugar</button>
+          <button class="btn big adventure" data-action="play-adventure">🗺️ Aventura · Nivel <b data-bind="level">1</b></button>
+          <button class="btn big daily" data-action="play-daily">📅 Reto diario <small data-bind="dailyBest"></small></button>
+          <div class="row">
+            <button class="btn" data-action="themes">🎨 Temas</button>
+            <button class="btn" data-action="shop">🛒 Tienda</button>
+            <button class="btn gift" data-action="daily-reward">🎁 <span class="dot hidden" data-bind="giftDot"></span></button>
+          </div>
+        </nav>
+      </section>
+
+      <section id="game" class="screen">
+        <header class="hud">
+          <button class="icon-btn" data-action="pause" aria-label="Pausa">⏸</button>
+          <div class="score-box">
+            <div class="score" data-bind="score">0</div>
+            <div class="sub" data-bind="goal"></div>
+          </div>
+          <span class="pill coin">🪙 <b data-bind="coins">0</b></span>
+        </header>
+        <div class="canvas-wrap"><canvas id="board"></canvas></div>
+        <footer class="boosters">
+          <button class="booster" data-action="hammer">🔨 <b data-bind="hammers">0</b></button>
+        </footer>
+      </section>
+
+      <div id="toast" class="toast hidden"></div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
