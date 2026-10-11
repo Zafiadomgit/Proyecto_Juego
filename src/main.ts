@@ -507,7 +507,7 @@ function showSettings(): void {
        <button class="btn" data-action="privacy">Política de privacidad</button>
        ${platform.ads.privacyOptionsAvailable ? '<button class="btn" data-action="adPrivacy">Opciones de privacidad de anuncios</button>' : ''}
        <button class="btn ghost" data-action="close">Cerrar</button>
-     </div><p class="legal">Joya Bloques v${__APP_VERSION__}</p>`,
+     </div><p class="legal">Gemzy Blocks v${__APP_VERSION__}</p>`,
     {
       privacy: () => (PRIVACY_POLICY_URL ? window.open(PRIVACY_POLICY_URL, '_blank') : toast('Política de privacidad pendiente de publicar')),
       adPrivacy: () => void platform.ads.showPrivacyOptions(),

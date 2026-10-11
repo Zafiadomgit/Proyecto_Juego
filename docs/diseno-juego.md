@@ -1,4 +1,4 @@
-# Joya Bloques — Documento de diseño (GDD)
+# Gemzy Blocks — Documento de diseño (GDD)
 
 ## Concepto
 Puzzle de bloques 8×8: arrastra piezas al tablero, completa filas o columnas para despejarlas y encadena

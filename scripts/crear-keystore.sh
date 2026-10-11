@@ -4,7 +4,7 @@
 # (gestor de contraseñas + copia de seguridad). Con Play App Signing, si la pierdes se puede restablecer
 # desde Play Console, pero tarda días.
 set -euo pipefail
-OUT="${1:-joya-bloques-upload.jks}"
+OUT="${1:-gemzy-blocks-upload.jks}"
 ALIAS="${2:-upload}"
 if [ -e "$OUT" ]; then echo "Ya existe $OUT; no lo sobrescribo." >&2; exit 1; fi
 keytool -genkeypair -v -keystore "$OUT" -alias "$ALIAS" -keyalg RSA -keysize 4096 -validity 10000

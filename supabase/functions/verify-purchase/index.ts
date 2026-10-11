@@ -2,7 +2,7 @@
 //
 // Secretos necesarios (supabase secrets set ...):
 //   GOOGLE_SERVICE_ACCOUNT_JSON  JSON completo de la cuenta de servicio con acceso a Play Console
-//   ANDROID_PACKAGE_NAME         p. ej. com.joyabloques.juego
+//   ANDROID_PACKAGE_NAME         p. ej. com.zafiadom.gemzyblocks
 //
 // Contrato (cordova-plugin-purchase): POST { id, transaction: { type: 'android-playstore', purchaseToken } }
 // → { ok: true, data: {...} }  |  { ok: false, code, message }

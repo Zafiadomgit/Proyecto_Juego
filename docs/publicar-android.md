@@ -7,8 +7,8 @@ Order matters: Google requires the app to exist in Play Console before you can c
 - A free AdMob account (https://admob.google.com) linked to the same Google account.
 - A Supabase project (free) for purchase verification.
 
-## 1. Choose the package name (permanent)
-It's in `capacitor.config.ts` and `android/app/build.gradle` (`com.joyabloques.juego`). **Once you upload the
+## 1. Package name (permanent)
+It's in `capacitor.config.ts` and `android/app/build.gradle` (`com.zafiadom.gemzyblocks`). **Once you upload the
 first AAB it can never be changed.** If you want a different one, tell me before step 3.
 
 ## 2. Create the upload key (on your computer)
@@ -24,7 +24,7 @@ Store the `.jks` and the passwords in a password manager. **Never upload them to
    (the free plan includes 2,000 min/month on private repos; public repos are free).
 3. *Settings → Secrets and variables → Actions → Secrets*: `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`,
    `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` (the script tells you how to get them).
-4. Every push builds `joya-bloques-release-aab` (for Play) and `joya-bloques-debug-apk` (to install on your phone).
+4. Every push builds `gemzy-blocks-release-aab` (for Play) and `gemzy-blocks-debug-apk` (to install on your phone).
    Download them from the *Actions* tab → run → *Artifacts*.
 
 **Option B: Android Studio on your PC.**
@@ -34,7 +34,7 @@ npm ci && npm run build && npx cap sync android && npx cap open android
 In Android Studio: *Build → Generate Signed App Bundle* → use your `.jks`.
 
 ## 4. Create the app in Play Console
-1. *Create app* → name "Joya Bloques", Game, Free. **Free can't be changed to paid later** (and that's what we want).
+1. *Create app* → name "Gemzy Blocks", Game, Free. **Free can't be changed to paid later** (and that's what we want).
 2. *Testing → Internal testing → Create release* → upload the AAB. Accept **Play App Signing**.
 3. Add your Gmail as a tester (internal testing list).
 
@@ -62,7 +62,7 @@ internal testing link (not the sideloaded debug APK) and you'll see the "Test ca
 3. Deploy the function:
    ```bash
    npx supabase login
-   npx supabase secrets set --project-ref YOUR_PROJECT ANDROID_PACKAGE_NAME=com.joyabloques.juego
+   npx supabase secrets set --project-ref YOUR_PROJECT ANDROID_PACKAGE_NAME=com.zafiadom.gemzyblocks
    npx supabase secrets set --project-ref YOUR_PROJECT GOOGLE_SERVICE_ACCOUNT_JSON="$(cat service-account.json)"
    npx supabase functions deploy verify-purchase --project-ref YOUR_PROJECT
    ```

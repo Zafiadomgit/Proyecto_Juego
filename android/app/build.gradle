@@ -8,10 +8,10 @@ def signingValue = { String envName, String propName -> System.getenv(envName) ?
 def releaseStoreFile = signingValue('ANDROID_KEYSTORE_PATH', 'storeFile')
 
 android {
-    namespace = "com.joyabloques.juego"
+    namespace = "com.zafiadom.gemzyblocks"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.joyabloques.juego"
+        applicationId "com.zafiadom.gemzyblocks"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         // versionCode debe crecer en cada subida a Play: en CI se usa el número de ejecución.

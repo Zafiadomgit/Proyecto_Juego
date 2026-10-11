@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Joya Bloques</string>
-    <string name="title_activity_main">Joya Bloques</string>
-    <string name="package_name">com.joyabloques.juego</string>
-    <string name="custom_url_scheme">com.joyabloques.juego</string>
+    <string name="app_name">Gemzy Blocks</string>
+    <string name="title_activity_main">Gemzy Blocks</string>
+    <string name="package_name">com.zafiadom.gemzyblocks</string>
+    <string name="custom_url_scheme">com.zafiadom.gemzyblocks</string>
 </resources>

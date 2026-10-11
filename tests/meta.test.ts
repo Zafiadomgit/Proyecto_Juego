@@ -67,7 +67,7 @@ describe('Guardado', () => {
     s.coins = 77;
     writeSave(st, s);
     expect(loadSave(st).coins).toBe(77);
-    st.setItem('joya-bloques-save', '{roto');
+    st.setItem('gemzy-blocks-save', '{roto');
     expect(loadSave(st).coins).toBe(0);
   });
 });

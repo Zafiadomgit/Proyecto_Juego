@@ -1,4 +1,4 @@
-# Joya Bloques 💎
+# Gemzy Blocks 💎
 
 Un puzzle de bloques gratuito para Android, **diseñado a partir de lo que los jugadores dicen en las reseñas de
 Google Play**: el género más descargado (puzzle de bloques), con capa meta hybrid-casual y una monetización
@@ -28,7 +28,7 @@ docs/           Investigación de mercado, GDD, cumplimiento Play Store, hoja de
 ```
 
 ## Diseño
-El juego sigue el sistema de diseño **Joya Bloques** (paleta Noche, bloques con bisel, Lilita One + Nunito, iconos SVG).
+El juego sigue el sistema de diseño **Gemzy Blocks** (paleta Noche, bloques con bisel, Lilita One + Nunito, iconos SVG).
 Los tokens viven en `src/style.css` (`:root`) y en `src/meta/themes.ts`; mantenlos en sincronía con el artifact Design System.
 Las fuentes van empaquetadas con `@fontsource` para que el juego funcione sin conexión.
 

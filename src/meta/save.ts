@@ -19,7 +19,7 @@ export interface SaveData {
   stats: { gamesPlayed: number; gamesSinceInterstitial: number; lastInterstitialAt: number };
 }
 
-const KEY = 'joya-bloques-save';
+const KEY = 'gemzy-blocks-save';
 
 export function defaultSave(): SaveData {
   return {

@@ -1,4 +1,4 @@
-package com.joyabloques.juego;
+package com.zafiadom.gemzyblocks;
 
 import com.getcapacitor.BridgeActivity;
 
