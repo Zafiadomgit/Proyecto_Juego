@@ -36,5 +36,6 @@ Las fuentes van empaquetadas con `@fontsource` para que el juego funcione sin co
 - [Investigación de mercado](docs/investigacion-mercado.md)
 - [Diseño del juego](docs/diseno-juego.md)
 - [Cumplimiento de políticas de Google Play](docs/cumplimiento-play-store.md)
+- [Compilar con Android Studio](docs/android-studio.md)
 - [Publicar en Google Play (paso a paso)](docs/publicar-android.md)
 - [Hoja de ruta](docs/hoja-de-ruta.md)
