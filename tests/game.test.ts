@@ -1,19 +1,24 @@
 import { describe, expect, it } from 'vitest';
 import { Game } from '../src/core/game';
+import { Board } from '../src/core/board';
+import { orientations, rotateShape, shapeById } from '../src/core/pieces';
 import { generateLevel, starsForLevel } from '../src/core/levels';
 import { linePoints } from '../src/core/scoring';
 
-/** Juega automáticamente colocando la primera pieza en la primera posición válida. */
+/** Juega automáticamente: primera posición válida, probando las 4 orientaciones de cada pieza. */
 function autoplay(game: Game, maxMoves = 500): void {
   for (let m = 0; m < maxMoves && !game.over; m++) {
     let placed = false;
     for (let i = 0; i < game.tray.length && !placed; i++) {
-      for (let r = 0; r < 8 && !placed; r++)
-        for (let c = 0; c < 8 && !placed; c++)
-          if (game.canPlace(i, r, c)) {
-            game.place(i, r, c);
-            placed = true;
-          }
+      for (let rot = 0; rot < 4 && !placed && game.tray[i]; rot++) {
+        for (let r = 0; r < 8 && !placed; r++)
+          for (let c = 0; c < 8 && !placed; c++)
+            if (game.canPlace(i, r, c)) {
+              game.place(i, r, c);
+              placed = true;
+            }
+        if (!placed) game.rotate(i);
+      }
     }
     if (!placed) break;
   }
@@ -83,5 +88,84 @@ describe('Niveles de aventura', () => {
   it('otorga más estrellas cuanto más eficiente', () => {
     expect(starsForLevel(4, 5)).toBe(3);
     expect(starsForLevel(4, 100)).toBe(1);
+  });
+});
+
+describe('Giro de piezas', () => {
+  it('cuatro giros devuelven la forma original', () => {
+    const l = shapeById('l1');
+    let s = l;
+    for (let i = 0; i < 4; i++) s = rotateShape(s);
+    const key = (x: typeof l) => x.cells.map(([r, c]) => `${r},${c}`).sort().join(' ');
+    expect(key(s)).toBe(key(l));
+    expect(key(rotateShape(l))).not.toBe(key(l));
+  });
+
+  it('las formas simétricas tienen menos orientaciones', () => {
+    expect(orientations(shapeById('sq2')).length).toBe(1);
+    expect(orientations(shapeById('h3')).length).toBe(2);
+    expect(orientations(shapeById('t1')).length).toBe(4);
+  });
+
+  it('una pieza que solo cabe girada no termina la partida', () => {
+    const b = Board.from(Array.from({ length: 8 }, (_, r) => (r === 0 ? '#.######' : '########').replace(/#/g, '#')));
+    // solo queda un hueco vertical de 1 en la columna 1, fila 0: la barra horizontal no cabe, pero tampoco girada
+    expect(b.fitsAnyRotation(shapeById('h2'))).toBe(false);
+    const b2 = Board.from(['#.######', '#.######', '########', '########', '########', '########', '########', '########']);
+    expect(b2.fitsAnywhere(shapeById('h2'))).toBe(false);
+    expect(b2.fitsAnyRotation(shapeById('h2'))).toBe(true);
+  });
+
+  it('girar cambia la pieza de la bandeja y cuenta', () => {
+    const g = new Game({ kind: 'classic' }, 3);
+    const before = g.tray[0]!.shape.id;
+    expect(g.rotate(0)).toBe(true);
+    expect(g.tray[0]!.shape.id).not.toBe(before);
+    expect(g.rotations).toBe(1);
+  });
+});
+
+describe('Potenciadores', () => {
+  it('la bomba vacía 3×3 pero respeta las gemas', () => {
+    const g = new Game({ kind: 'classic' }, 5);
+    for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) g.board.set(r, c, 2);
+    g.board.gems[1 * 8 + 1] = true;
+    const cleared = g.useBomb(1, 1);
+    expect(cleared.length).toBe(8);
+    expect(g.board.get(1, 1)).toBe(2);
+    expect(g.board.get(0, 0)).toBe(0);
+  });
+
+  it('barajar da una bandeja nueva completa', () => {
+    const g = new Game({ kind: 'classic' }, 9);
+    g.tray[1] = null;
+    g.shuffle();
+    expect(g.tray.every((p) => p !== null)).toBe(true);
+  });
+});
+
+describe('Giros limitados', () => {
+  it('se empieza con 3 giros y sin giros no se puede girar', () => {
+    const g = new Game({ kind: 'classic' }, 11);
+    expect(g.rotationCharges).toBe(3);
+    g.rotate(0);
+    g.rotate(0);
+    g.rotate(0);
+    expect(g.rotationCharges).toBe(0);
+    expect(g.rotate(0)).toBe(false);
+  });
+
+  it('despejar 2 líneas a la vez da un giro', () => {
+    const g = new Game({ kind: 'classic' }, 13);
+    g.rotationCharges = 1;
+    for (let c = 0; c < 7; c++) {
+      g.board.set(0, c, 1);
+      g.board.set(1, c, 1);
+    }
+    g.tray[0] = { shape: shapeById('v2'), color: 1 };
+    const res = g.place(0, 0, 7);
+    expect(res.clear.rows.length).toBe(2);
+    expect(res.rotationEarned).toBe(true);
+    expect(g.rotationCharges).toBe(2);
   });
 });

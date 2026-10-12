@@ -52,3 +52,21 @@ Precios de referencia; los locales los fija Play Console (precios adaptados a ca
 `tests/` incluye un generador determinista de niveles. Con un bot "codicioso" muy simple (con 1 revivir)
 se superan ~7 de los 10 primeros niveles y ~55 % de los 40 primeros. Con datos reales hay que ajustar
 `rowsToFill` y `gemTarget` en `src/core/levels.ts`, apuntando a que un 85–90 % de jugadores supere los niveles 1–10.
+
+## v0.3 — Impacto, retención y monetización
+
+### Bucle de "una partida más"
+Partida → **XP** (nivel del jugador) → **misiones diarias** → **Pase Gemzy** → recompensas → partida.
+La pantalla de resultados enseña todo el progreso ganado (barra de XP animada, subida de nivel,
+misiones completadas, nivel del pase) para que siempre haya un objetivo a una partida de distancia.
+
+| Sistema | Detalle |
+|---|---|
+| Giros | 3 por partida, +1 al despejar 2+ líneas a la vez (máx. 5). Con giros ilimitados un bot sacaba una mediana de 2.104 puntos (máx. 11.928) frente a 738 con el límite: sin límite desaparece la tensión. |
+| Fiebre | Racha ≥ 3: marco dorado con chispas, rótulo "¡Fiebre!" y barra de racha en el HUD. |
+| Efectos | Haces de luz por línea, ondas expansivas, partículas con brillo, rótulos con rebote en cola, marcador que cuenta, polvo al colocar, "¡Nuevo récord!" en plena partida. |
+| Nivel del jugador | Curva suave (80 XP + 30 por nivel). Monedas cada nivel; gemas y bomba cada 5. |
+| Misiones diarias | 3 al día (fácil/media/difícil), iguales para todos, recompensas fijas visibles. |
+| Pase Gemzy (T1) | 30 niveles, 120 XP por nivel. Vía gratis + vía premium (`gemzy_pass_s1`, 4,99 US$) con gemas, bombas y tema exclusivo Aurora. Retroactivo al comprar. Sin cuenta atrás artificial. |
+| Potenciadores | Martillo (25 💎), Bomba 3×3 (35 💎, no rompe gemas), Barajar (20 💎). Caja de potenciadores 1,99 US$. |
+| Oferta de bienvenida | Pack de inicio tras la 3.ª partida, una sola vez, sin temporizador, sigue en la tienda. |

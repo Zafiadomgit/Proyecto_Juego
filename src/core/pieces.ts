@@ -78,3 +78,30 @@ export function shapeById(id: string): PieceShape {
   if (!s) throw new Error(`Pieza desconocida: ${id}`);
   return s;
 }
+
+/** Gira una forma 90° en sentido horario y la vuelve a pegar a la esquina superior izquierda. */
+export function rotateShape(s: PieceShape): PieceShape {
+  const { rows } = shapeSize(s);
+  const cells: Cell[] = s.cells
+    .map(([r, c]) => [c, rows - 1 - r] as const)
+    .sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const [base, turns = '0'] = s.id.split(':');
+  return { id: `${base}:${(Number(turns) + 1) % 4}`, cells, weight: s.weight };
+}
+
+/** Las (hasta) 4 orientaciones distintas de una forma, empezando por la actual. */
+export function orientations(s: PieceShape): PieceShape[] {
+  const out: PieceShape[] = [s];
+  const key = (x: PieceShape) => x.cells.map(([r, c]) => `${r},${c}`).sort().join(' ');
+  const seen = new Set([key(s)]);
+  let cur = s;
+  for (let i = 0; i < 3; i++) {
+    cur = rotateShape(cur);
+    const k = key(cur);
+    if (!seen.has(k)) {
+      seen.add(k);
+      out.push(cur);
+    }
+  }
+  return out;
+}

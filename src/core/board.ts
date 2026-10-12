@@ -1,4 +1,4 @@
-import type { PieceShape } from './pieces';
+import { orientations, type PieceShape } from './pieces';
 
 export const BOARD_SIZE = 8;
 
@@ -120,6 +120,11 @@ export class Board {
     for (let r = 0; r < this.size; r++)
       for (let c = 0; c < this.size; c++) if (this.canPlace(shape, r, c)) return true;
     return false;
+  }
+
+  /** ¿Cabe en alguna orientación? (el jugador puede girar las piezas) */
+  fitsAnyRotation(shape: PieceShape): boolean {
+    return orientations(shape).some((o) => this.fitsAnywhere(o));
   }
 
   isEmpty(): boolean {

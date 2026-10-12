@@ -14,7 +14,7 @@ export interface ProductDef {
   description: string;
   /** Precio de referencia en USD; el precio real localizado lo da Google Play. */
   referencePriceUsd: number;
-  grants: { gems?: number; removeAds?: boolean; themes?: string[] };
+  grants: { gems?: number; removeAds?: boolean; themes?: string[]; pass?: boolean; boosters?: { hammer?: number; bomb?: number; shuffle?: number } };
   highlight?: string;
 }
 
@@ -36,6 +36,23 @@ export const PRODUCTS: readonly ProductDef[] = [
     referencePriceUsd: 4.99,
     grants: { gems: 300, removeAds: true, themes: ['gold'] },
     highlight: 'Mejor valor',
+  },
+  {
+    id: 'gemzy_pass_s1',
+    type: 'non_consumable',
+    title: 'Pase Gemzy · Temporada 1',
+    description: 'Desbloquea la vía premium del pase: más gemas, potenciadores y el tema exclusivo "Aurora". Las recompensas ya alcanzadas se reclaman al momento.',
+    referencePriceUsd: 4.99,
+    grants: { pass: true },
+    highlight: 'Temporada 1',
+  },
+  {
+    id: 'boosters_pack',
+    type: 'consumable',
+    title: 'Caja de potenciadores',
+    description: '5 martillos, 3 bombas y 5 barajados.',
+    referencePriceUsd: 1.99,
+    grants: { boosters: { hammer: 5, bomb: 3, shuffle: 5 } },
   },
   {
     id: 'gems_100',
@@ -71,4 +88,6 @@ export function productById(id: string): ProductDef | undefined {
 export const GEM_COSTS = {
   revive: 40,
   hammer: 25,
+  bomb: 35,
+  shuffle: 20,
 } as const;

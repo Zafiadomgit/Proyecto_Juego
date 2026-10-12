@@ -22,6 +22,13 @@ const ICONS = {
   soundOn: stroke('<path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>'),
   soundOff: stroke('<path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="m17 9 5 6M22 9l-5 6"/>'),
   star: `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.5 2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9Z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>`,
+  target: stroke('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>'),
+  crown: stroke('<path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8Z"/>', 'currentColor', 2.3),
+  bomb: `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="14" r="7" fill="currentColor"/><path d="M14.5 8.5 17 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M18 2.5v2M21.5 6h-2M20.5 3.5l-1.4 1.4" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="11.5" r="1.6" fill="#fff" opacity=".55"/></svg>`,
+  shuffle: stroke('<path d="M3 7h3.5c2 0 3.2 1 4.3 2.7l2.4 4.6C14.3 16 15.5 17 17.5 17H21"/><path d="M3 17h3.5c1.4 0 2.4-.5 3.2-1.4M14.3 8.4c.8-.9 1.8-1.4 3.2-1.4H21"/><path d="m18 4 3 3-3 3M18 14l3 3-3 3"/>'),
+  lock: stroke('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'),
+  check: stroke('<path d="M20 6 9 17l-5-5"/>', 'currentColor', 3),
+  rotate: stroke('<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/>'),
 } as const;
 
 export type IconName = keyof typeof ICONS;

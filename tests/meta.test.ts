@@ -56,7 +56,7 @@ describe('Economía', () => {
   });
 
   it('el catálogo no contiene recompensas aleatorias', () => {
-    for (const p of PRODUCTS) expect(Object.keys(p.grants).every((k) => ['gems', 'removeAds', 'themes'].includes(k))).toBe(true);
+    for (const p of PRODUCTS) expect(Object.keys(p.grants).every((k) => ['gems', 'removeAds', 'themes', 'pass', 'boosters'].includes(k))).toBe(true);
   });
 });
 

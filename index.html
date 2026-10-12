@@ -10,11 +10,18 @@
     <div id="app">
       <section id="menu" class="screen active">
         <header class="topbar">
+          <button class="player" data-action="profile" aria-label="Nivel del jugador">
+            <span class="player-level" data-bind="playerLevel">1</span>
+            <span class="player-bar"><i data-bind-style="xpBar"></i></span>
+          </button>
           <div class="wallet">
             <span class="pill"><i data-icon="coin"></i><b data-bind="coins">0</b></span>
             <span class="pill"><i data-icon="gem"></i><b data-bind="gems">0</b></span>
           </div>
-          <button class="icon-btn" data-action="settings" aria-label="Ajustes"><i data-icon="settings"></i></button>
+          <div class="top-actions">
+            <button class="icon-btn gift" data-action="daily-reward" aria-label="Regalo diario"><i data-icon="gift"></i><span class="dot hidden" data-bind="giftDot"></span></button>
+            <button class="icon-btn" data-action="settings" aria-label="Ajustes"><i data-icon="settings"></i></button>
+          </div>
         </header>
         <div class="logo">
           <div class="logo-mark" aria-hidden="true">
@@ -28,10 +35,11 @@
           <button class="btn big primary" data-action="play-classic"><i data-icon="play"></i>Jugar</button>
           <button class="btn big adventure" data-action="play-adventure"><i data-icon="map"></i>Aventura · Nivel <b data-bind="level">1</b></button>
           <button class="btn big daily" data-action="play-daily"><i data-icon="calendar"></i>Reto diario <small data-bind="dailyBest"></small></button>
-          <div class="row">
-            <button class="btn secondary" data-action="themes"><i data-icon="palette"></i>Temas</button>
-            <button class="btn secondary" data-action="shop"><i data-icon="cart"></i>Tienda</button>
-            <button class="btn secondary gift" data-action="daily-reward" aria-label="Regalo diario"><i data-icon="gift"></i><span class="dot hidden" data-bind="giftDot"></span></button>
+          <div class="tiles">
+            <button class="tile" data-action="missions"><i data-icon="target"></i><span>Misiones</span><span class="badge hidden" data-bind="missionsBadge"></span></button>
+            <button class="tile pass" data-action="pass"><i data-icon="crown"></i><span>Pase</span><span class="badge hidden" data-bind="passBadge"></span></button>
+            <button class="tile" data-action="themes"><i data-icon="palette"></i><span>Temas</span></button>
+            <button class="tile" data-action="shop"><i data-icon="cart"></i><span>Tienda</span></button>
           </div>
         </nav>
       </section>
@@ -42,12 +50,16 @@
           <div class="score-box">
             <div class="score" data-bind="score">0</div>
             <div class="sub" data-bind="goal"></div>
+            <div class="combo-meter" aria-label="Racha"><i></i><i></i><i></i><i></i><i></i><b data-bind="comboLabel"></b></div>
           </div>
           <span class="pill"><i data-icon="coin"></i><b data-bind="coins">0</b></span>
         </header>
         <div class="canvas-wrap"><canvas id="board"></canvas></div>
         <footer class="boosters">
-          <button class="booster" data-action="hammer" aria-label="Martillo"><i data-icon="hammer"></i><b data-bind="hammers">0</b></button>
+          <span class="rot-pill" title="Giros: toca una pieza para girarla. Ganas uno al despejar 2 líneas a la vez."><i data-icon="rotate"></i><b data-bind="rotations">3</b></span>
+          <button class="booster" data-action="booster:hammer" aria-label="Martillo: rompe un bloque"><i data-icon="hammer"></i><b data-bind="booster-hammer">0</b></button>
+          <button class="booster" data-action="booster:bomb" aria-label="Bomba: limpia un área de 3 por 3"><i data-icon="bomb"></i><b data-bind="booster-bomb">0</b></button>
+          <button class="booster" data-action="booster:shuffle" aria-label="Barajar: piezas nuevas"><i data-icon="shuffle"></i><b data-bind="booster-shuffle">0</b></button>
         </footer>
       </section>
 

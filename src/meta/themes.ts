@@ -64,6 +64,16 @@ export const THEMES: readonly Theme[] = [
     cellEmpty: '#3a2900',
     blocks: ['#ffd700', '#ffb300', '#ffe680', '#f0c419', '#d4a017', '#ffcf40', '#e6be8a'],
   },
+  {
+    id: 'aurora',
+    name: 'Aurora',
+    price: null,
+    exclusiveTo: 'gemzy_pass_s1',
+    boardBg: '#0a1f3a',
+    cellEmpty: '#11304f',
+    blocks: ['#ff9ad5', '#ffd29a', '#fff6a3', '#9affc8', '#8ff3ff', '#a9b8ff', '#e1a6ff'],
+    blocksDeep: ['#e0459b', '#ff9a3c', '#f0d000', '#2fd38a', '#20b9e6', '#5a6cf0', '#a855f7'],
+  },
 ];
 
 export function themeById(id: string): Theme {

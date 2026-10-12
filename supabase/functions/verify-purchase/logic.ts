@@ -17,6 +17,8 @@ export type ProductKind = 'consumable' | 'non_consumable';
 export const ALLOWED_PRODUCTS: Record<string, ProductKind> = {
   remove_ads: 'non_consumable',
   starter_pack: 'non_consumable',
+  gemzy_pass_s1: 'non_consumable',
+  boosters_pack: 'consumable',
   gems_100: 'consumable',
   gems_550: 'consumable',
   gems_1200: 'consumable',

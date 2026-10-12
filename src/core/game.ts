@@ -1,6 +1,6 @@
 import { Board, type ClearResult } from './board';
 import { generateLevel } from './levels';
-import { COLOR_COUNT, SHAPES, type Piece, type PieceShape } from './pieces';
+import { COLOR_COUNT, SHAPES, rotateShape, type Piece, type PieceShape } from './pieces';
 import { Rng } from './rng';
 import {
   COMBO_GRACE_MOVES,
@@ -16,6 +16,9 @@ export type GameMode =
   | { kind: 'adventure'; level: number };
 
 export const TRAY_SIZE = 3;
+/** Giros: recurso táctico. Se empieza con 3 y se gana 1 por despejar 2+ líneas a la vez (máx. 5). */
+export const START_ROTATIONS = 3;
+export const MAX_ROTATIONS = 5;
 
 export interface PlaceResult {
   points: number;
@@ -25,6 +28,7 @@ export interface PlaceResult {
   perfect: boolean;
   gameOver: boolean;
   won: boolean;
+  rotationEarned: boolean;
 }
 
 export class Game {
@@ -40,6 +44,10 @@ export class Game {
   gemsCollected = 0;
   gemTarget = 0;
   revivesUsed = 0;
+  maxCombo = 0;
+  perfects = 0;
+  rotations = 0;
+  rotationCharges = START_ROTATIONS;
   over = false;
   won = false;
 
@@ -77,10 +85,10 @@ export class Game {
     let tray: Piece[] = [];
     for (let attempt = 0; attempt < 12; attempt++) {
       tray = Array.from({ length: TRAY_SIZE }, () => makePiece(drawShape()));
-      if (tray.every((p) => this.board.fitsAnywhere(p.shape))) break;
+      if (tray.every((p) => this.fits(p.shape))) break;
     }
 
-    if (!tray.some((p) => this.board.fitsAnywhere(p.shape))) {
+    if (!tray.some((p) => this.fits(p.shape))) {
       const fitting = SHAPES.filter((s) => this.board.fitsAnywhere(s));
       if (fitting.length > 0) tray[this.rng.int(TRAY_SIZE)] = makePiece(this.rng.pick(fitting));
     }
@@ -115,6 +123,7 @@ export class Game {
 
     if (lines > 0) {
       this.combo++;
+      this.maxCombo = Math.max(this.maxCombo, this.combo);
       this.movesSinceClear = 0;
       this.linesCleared += lines;
       points += linePoints(lines, this.combo);
@@ -124,7 +133,15 @@ export class Game {
     }
 
     const perfect = lines > 0 && this.board.isEmpty();
-    if (perfect) points += PERFECT_CLEAR_BONUS;
+    let rotationEarned = false;
+    if ((lines >= 2 || perfect) && this.rotationCharges < MAX_ROTATIONS) {
+      this.rotationCharges++;
+      rotationEarned = true;
+    }
+    if (perfect) {
+      points += PERFECT_CLEAR_BONUS;
+      this.perfects++;
+    }
     this.score += points;
     this.gemsCollected += clear.gemsCollected;
 
@@ -144,11 +161,51 @@ export class Game {
       perfect,
       gameOver: this.over,
       won: this.won,
+      rotationEarned,
     };
   }
 
+  /** ¿Puede colocarse esta forma? Si quedan giros, vale cualquier orientación. */
+  fits(shape: PieceShape): boolean {
+    return this.rotationCharges > 0 ? this.board.fitsAnyRotation(shape) : this.board.fitsAnywhere(shape);
+  }
+
   hasAnyMove(): boolean {
-    return this.tray.some((p) => p !== null && this.board.fitsAnywhere(p.shape));
+    return this.tray.some((p) => p !== null && this.fits(p.shape));
+  }
+
+  /** Gira 90° la pieza de la bandeja gastando un giro. */
+  rotate(trayIndex: number): boolean {
+    const piece = this.tray[trayIndex];
+    if (!piece || this.over || this.rotationCharges <= 0) return false;
+    this.tray[trayIndex] = { ...piece, shape: rotateShape(piece.shape) };
+    this.rotations++;
+    this.rotationCharges--;
+    // Sin giros, una pieza que solo cabía girada puede dejar la partida sin movimientos.
+    if (!this.hasAnyMove()) this.over = true;
+    return true;
+  }
+
+  /** Bomba: vacía un área de 3×3 alrededor de la celda (las gemas resisten). Devuelve las celdas vaciadas. */
+  useBomb(row: number, col: number): { r: number; c: number; color: number }[] {
+    if (this.over || !this.board.inBounds(row, col)) return [];
+    const cleared: { r: number; c: number; color: number }[] = [];
+    for (let r = row - 1; r <= row + 1; r++)
+      for (let c = col - 1; c <= col + 1; c++) {
+        if (!this.board.inBounds(r, c) || this.board.isGem(r, c)) continue;
+        const v = this.board.get(r, c);
+        if (v === 0) continue;
+        cleared.push({ r, c, color: v });
+        this.board.set(r, c, 0);
+      }
+    return cleared;
+  }
+
+  /** Barajar: cambia las piezas de la bandeja por otras nuevas. */
+  shuffle(): boolean {
+    if (this.over) return false;
+    this.refillTray();
+    return true;
   }
 
   /** Martillo: elimina un bloque normal (no gemas). No puede completar líneas, solo abre hueco. */

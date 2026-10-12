@@ -66,6 +66,33 @@ export class Sfx {
     [0, 4, 7, 12, 7, 12, 16].forEach((n, i) => this.tone(523 * Math.pow(2, n / 12), i * 0.09, 0.22, 'triangle', 0.13));
   }
 
+  rotate(): void {
+    this.tone(520, 0, 0.05, 'triangle', 0.07);
+    this.tone(780, 0.03, 0.05, 'triangle', 0.05);
+  }
+
+  bomb(): void {
+    this.tone(90, 0, 0.35, 'sawtooth', 0.12);
+    this.tone(60, 0.05, 0.4, 'square', 0.08);
+    [0, 7, 12].forEach((n, i) => this.tone(330 * Math.pow(2, n / 12), 0.08 + i * 0.05, 0.15, 'triangle', 0.08));
+  }
+
+  fever(): void {
+    [0, 4, 7, 11, 14].forEach((n, i) => this.tone(587 * Math.pow(2, n / 12), i * 0.05, 0.2, 'square', 0.05));
+  }
+
+  record(): void {
+    [0, 4, 7, 12, 16, 19, 24].forEach((n, i) => this.tone(523 * Math.pow(2, n / 12), i * 0.07, 0.3, 'triangle', 0.12));
+  }
+
+  mission(): void {
+    [0, 7, 12].forEach((n, i) => this.tone(784 * Math.pow(2, n / 12), i * 0.08, 0.2, 'sine', 0.12));
+  }
+
+  levelUp(): void {
+    [0, 4, 7, 12, 7, 12, 16, 19].forEach((n, i) => this.tone(440 * Math.pow(2, n / 12), i * 0.08, 0.25, 'triangle', 0.13));
+  }
+
   tap(): void {
     this.tone(880, 0, 0.04, 'sine', 0.06);
   }
